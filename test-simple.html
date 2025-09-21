@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Chat Test</title>
+</head>
+<body>
+    <h1>Chat Test</h1>
+    <div id="messages"></div>
+    <input type="text" id="messageInput" placeholder="Type a message...">
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            document.getElementById('messages').innerHTML += `<p><strong>You:</strong> ${message}</p>`;
+            input.value = '';
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: message,
+                        category: 'product-inquiry',
+                        language: 'en',
+                        storeId: 'store1',
+                        context: []
+                    })
+                });
+
+                const data = await response.json();
+                document.getElementById('messages').innerHTML += `<p><strong>Bot:</strong> ${data.response || data.error || 'No response'}</p>`;
+            } catch (error) {
+                document.getElementById('messages').innerHTML += `<p><strong>Error:</strong> ${error.message}</p>`;
+            }
+        }
+
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>

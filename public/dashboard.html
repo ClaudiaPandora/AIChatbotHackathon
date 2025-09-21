@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Retail Analytics Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .metric { font-size: 2em; font-weight: bold; color: #2196F3; }
+        .chart { height: 200px; background: #f8f9fa; border-radius: 5px; display: flex; align-items: center; justify-content: center; margin: 10px 0; }
+        input, button { padding: 10px; margin: 5px; border: 1px solid #ddd; border-radius: 5px; }
+        button { background: #2196F3; color: white; border: none; cursor: pointer; }
+        .knowledge-form { background: #e3f2fd; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .faq-item, .category-item { padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
+        .back-btn { background: #666; text-decoration: none; color: white; padding: 10px 20px; border-radius: 5px; }
+        .back-btn:hover { background: #555; }
+        .category-item { background: #f8f9fa; margin: 5px 0; border-radius: 5px; border: none; }
+        .case-item { 
+            background: #f8f9fa; 
+            margin: 8px 0; 
+            padding: 16px; 
+            border-radius: 8px; 
+            border-left: 4px solid #2196F3;
+            transition: all 0.2s ease;
+        }
+        .case-item:hover { 
+            background: #f0f7ff; 
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .case-high { border-left-color: #f44336; }
+        .case-medium { border-left-color: #ff9800; }
+        .case-low { border-left-color: #4caf50; }
+        .case-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .case-id {
+            font-weight: bold;
+            color: #1976d2;
+            font-size: 0.95em;
+        }
+        .case-status { 
+            display: inline-block; 
+            padding: 4px 12px; 
+            border-radius: 16px; 
+            font-size: 0.75em; 
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .status-new { background: #e3f2fd; color: #1976d2; }
+        .status-awaiting { background: #fff3e0; color: #f57c00; }
+        .status-resolved { background: #e8f5e8; color: #388e3c; }
+        .case-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 0.9em;
+        }
+        .case-detail-item {
+            display: flex;
+            align-items: center;
+        }
+        .case-detail-label {
+            font-weight: 600;
+            color: #555;
+            margin-right: 8px;
+            min-width: 60px;
+        }
+        .case-detail-value {
+            color: #333;
+        }
+        .cases-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .cases-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .cases-container {
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        .cases-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .cases-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        .cases-container::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>📊 Retailer Analytics Dashboard</h1>
+                <p>Real-time insights for your AI chatbot performance</p>
+            </div>
+            <a href="/" class="back-btn">← Back to Home</a>
+        </div>
+
+        <div style="background: white; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+            <input type="text" id="storeId" placeholder="Store ID" value="store1">
+            <button onclick="loadAnalytics()">Load Analytics</button>
+            <button onclick="loadAnalytics()" style="margin-left: 10px;">🔄 Refresh</button>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h3>📈 Total Queries</h3>
+                <div class="metric" id="totalQueries">0</div>
+                <div class="chart">Query Volume Chart</div>
+            </div>
+
+            <div class="card">
+                <h3>⏰ Peak Hours</h3>
+                <div class="metric" id="peakHour">N/A</div>
+                <div class="chart">Peak Hours Chart</div>
+            </div>
+
+            <div class="card">
+                <h3>😊 Customer Sentiment</h3>
+                <div id="sentiment">
+                    <div>Positive: <span id="positive">0</span></div>
+                    <div>Neutral: <span id="neutral">0</span></div>
+                    <div>Negative: <span id="negative">0</span></div>
+                </div>
+                <div class="chart">Sentiment Chart</div>
+            </div>
+
+            <div class="card">
+                <h3>🏷️ Top Problem Categories</h3>
+                <div id="categories">No data available</div>
+                <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+                    Use this data to identify common issues and improve your service
+                </p>
+            </div>
+
+            <div class="card">
+                <h3>❓ Top FAQs</h3>
+                <div id="faqs">No data available</div>
+            </div>
+
+            <div class="card">
+                <h3>🧠 Knowledge Base Management</h3>
+                <div class="knowledge-form">
+                    <input type="text" id="category" placeholder="Category (e.g., products)">
+                    <textarea id="content" placeholder="Content to add..." style="width: 100%; height: 60px; margin: 5px 0;"></textarea>
+                    <button onclick="addKnowledge()">Add Knowledge</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>🚀 System Status</h3>
+                <div>
+                    <div>✅ Chatbot: Online</div>
+                    <div>✅ Price Comparison: Active</div>
+                    <div>✅ Evidence Processing: Active</div>
+                    <div>✅ Multi-language: 3 languages</div>
+                    <div>✅ Voice Support: Enabled</div>
+                </div>
+                <div class="chart">System Health Metrics</div>
+            </div>
+
+            <div class="card">
+                <div class="cases-header">
+                    <h3>🎫 Customer Cases</h3>
+                    <span id="casesCount" style="background: #e3f2fd; color: #1976d2; padding: 4px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold;">0 Cases</span>
+                </div>
+                <div class="cases-container">
+                    <div id="cases">Loading cases...</div>
+                </div>
+                <div class="cases-actions">
+                    <button onclick="loadCases()" style="background: #2196F3;">🔄 Refresh</button>
+                    <a href="/cases-dashboard" style="background: #4CAF50; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">📋 View All</a>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>📊 Business Insights</h3>
+                <div id="insights">
+                    <div>• Monitor problem categories to identify improvement areas</div>
+                    <div>• Track sentiment to measure customer satisfaction</div>
+                    <div>• Use peak hours data for staff scheduling</div>
+                    <div>• Analyze FAQs to update knowledge base</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadAnalytics() {
+            const storeId = document.getElementById('storeId').value || 'store1';
+            
+            try {
+                const response = await fetch(`/api/analytics/${storeId}`);
+                const data = await response.json();
+                
+                document.getElementById('totalQueries').textContent = data.totalQueries;
+                document.getElementById('peakHour').textContent = data.peakHour;
+                
+                document.getElementById('positive').textContent = data.sentiment.positive;
+                document.getElementById('neutral').textContent = data.sentiment.neutral;
+                document.getElementById('negative').textContent = data.sentiment.negative;
+                
+                // Display top problem categories
+                const categoriesDiv = document.getElementById('categories');
+                if (data.topCategories && data.topCategories.length > 0) {
+                    categoriesDiv.innerHTML = data.topCategories.map(([category, count]) => 
+                        `<div class="category-item">
+                            <span>${category.replace('-', ' ').toUpperCase()}</span>
+                            <span><strong>${count} issues</strong></span>
+                        </div>`
+                    ).join('');
+                } else {
+                    categoriesDiv.innerHTML = 'No category data yet';
+                }
+                
+                const faqsDiv = document.getElementById('faqs');
+                if (data.topFaqs.length > 0) {
+                    faqsDiv.innerHTML = data.topFaqs.map(([faq, count]) => 
+                        `<div class="faq-item">
+                            <span>${faq}...</span>
+                            <span>${count} times</span>
+                        </div>`
+                    ).join('');
+                } else {
+                    faqsDiv.innerHTML = 'No FAQs yet';
+                }
+            } catch (error) {
+                console.error('Failed to load analytics:', error);
+            }
+        }
+
+        async function addKnowledge() {
+            const storeId = document.getElementById('storeId').value || 'store1';
+            const category = document.getElementById('category').value;
+            const content = document.getElementById('content').value;
+            
+            if (!category || !content) {
+                alert('Please fill in both category and content');
+                return;
+            }
+            
+            try {
+                await fetch('/api/knowledge', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ storeId, category, content })
+                });
+                
+                alert('Knowledge added successfully!');
+                document.getElementById('category').value = '';
+                document.getElementById('content').value = '';
+            } catch (error) {
+                alert('Failed to add knowledge');
+            }
+        }
+        
+        async function loadCases() {
+            try {
+                // Load both regular cases and analytics cases
+                const [casesResponse, analyticsResponse] = await Promise.all([
+                    fetch('/api/cases'),
+                    fetch('/api/analytics/store1')
+                ]);
+                
+                const cases = await casesResponse.json();
+                const analytics = await analyticsResponse.json();
+                
+                const casesDiv = document.getElementById('cases');
+                const casesCount = document.getElementById('casesCount');
+                
+                // Combine cases from both sources
+                const allCases = [...cases];
+                if (analytics.recentCases) {
+                    analytics.recentCases.forEach(analyticsCase => {
+                        // Only add if not already in regular cases
+                        if (!allCases.find(c => c.id === analyticsCase.caseId)) {
+                            allCases.push({
+                                id: analyticsCase.caseId,
+                                type: analyticsCase.category,
+                                details: analyticsCase.query,
+                                status: 'awaiting',
+                                priority: 'Medium',
+                                created: analyticsCase.timestamp
+                            });
+                        }
+                    });
+                }
+                
+                casesCount.textContent = `${allCases.length} Cases`;
+                
+                if (allCases.length > 0) {
+                    casesDiv.innerHTML = allCases.slice(0, 5).map(caseItem => {
+                        const priorityClass = caseItem.priority === 'High' ? 'case-high' : 
+                                            caseItem.priority === 'Medium' ? 'case-medium' : 'case-low';
+                        const statusClass = `status-${caseItem.status.toLowerCase().replace(' ', '')}`;
+                        const date = new Date(caseItem.created || caseItem.createdAt).toLocaleDateString();
+                        const time = new Date(caseItem.created || caseItem.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        
+                        return `
+                            <div class="case-item ${priorityClass}">
+                                <div class="case-header">
+                                    <span class="case-id">${caseItem.id}</span>
+                                    <span class="case-status ${statusClass}">${caseItem.status}</span>
+                                </div>
+                                <div class="case-details">
+                                    <div class="case-detail-item">
+                                        <span class="case-detail-label">Type:</span>
+                                        <span class="case-detail-value">${caseItem.type}</span>
+                                    </div>
+                                    <div class="case-detail-item">
+                                        <span class="case-detail-label">Priority:</span>
+                                        <span class="case-detail-value">${caseItem.priority}</span>
+                                    </div>
+                                    <div class="case-detail-item" style="grid-column: 1 / -1;">
+                                        <span class="case-detail-label">Details:</span>
+                                        <span class="case-detail-value">${(caseItem.details || caseItem.description || '').length > 50 ? (caseItem.details || caseItem.description || '').substring(0, 50) + '...' : (caseItem.details || caseItem.description || '')}</span>
+                                    </div>
+                                    <div class="case-detail-item">
+                                        <span class="case-detail-label">Date:</span>
+                                        <span class="case-detail-value">${date}</span>
+                                    </div>
+                                    <div class="case-detail-item">
+                                        <span class="case-detail-label">Time:</span>
+                                        <span class="case-detail-value">${time}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                    
+                    if (allCases.length > 5) {
+                        casesDiv.innerHTML += `<div style="text-align: center; padding: 10px; color: #666; font-style: italic;">Showing 5 of ${allCases.length} cases. <a href="/cases-dashboard" style="color: #2196F3;">View all cases</a></div>`;
+                    }
+                } else {
+                    casesDiv.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">No cases yet</div>';
+                }
+            } catch (error) {
+                console.error('Failed to load cases:', error);
+                document.getElementById('cases').innerHTML = '<div style="text-align: center; padding: 20px; color: #f44336;">Failed to load cases</div>';
+            }
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            loadAnalytics();
+            loadCases();
+        }, 30000);
+        
+        // Load initial data
+        loadAnalytics();
+        loadCases();
+    </script>
+</body>
+</html>

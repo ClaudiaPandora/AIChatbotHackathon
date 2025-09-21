@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Select Your Role - AI Retail Chatbot</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .container { background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); padding: 40px; text-align: center; max-width: 500px; width: 90%; }
+        h1 { color: #333; margin-bottom: 30px; font-size: 2em; }
+        .role-buttons { display: flex; flex-direction: column; gap: 20px; margin-top: 30px; }
+        .role-btn { padding: 20px; border: none; border-radius: 15px; font-size: 1.2em; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: block; }
+        .customer-btn { background: #4CAF50; color: white; }
+        .customer-btn:hover { background: #45a049; transform: translateY(-2px); }
+        .retailer-btn { background: #2196F3; color: white; }
+        .retailer-btn:hover { background: #1976D2; transform: translateY(-2px); }
+        .subtitle { color: #666; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛍️ AI Retail Chatbot</h1>
+        <p class="subtitle">Please select your role to continue</p>
+        <div class="role-buttons">
+            <a href="/chatbot" class="role-btn customer-btn">
+                👤 I'm a Customer
+                <br><small>Get help with products, returns, and support</small>
+            </a>
+            <a href="/login" class="role-btn retailer-btn">
+                🏪 I'm a Retailer
+                <br><small>Access dashboard and analytics</small>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

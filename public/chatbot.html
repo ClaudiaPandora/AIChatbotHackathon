@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Customer Support - AI Chatbot</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .chat-container { background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); height: 700px; display: flex; flex-direction: column; }
+        .chat-header { 
+            background: linear-gradient(135deg, #6A1B9A, #8E24AA); 
+            color: white; 
+            padding: 15px; 
+            border-radius: 10px 10px 0 0; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(106, 27, 154, 0.3);
+        }
+        .robot-avatar {
+            width: 40px;
+            height: 40px;
+            background: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            animation: bounce 2s infinite;
+            margin-right: 10px;
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; }
+        .message { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .user { background: #E1BEE7; margin-left: 50px; color: #333; }
+        .bot { background: #F3E5F5; margin-right: 50px; color: #333; }
+        .input-area { padding: 20px; border-top: 1px solid #eee; }
+        .category-section { margin-bottom: 15px; }
+        .category-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 10px 0; }
+        .category-btn { padding: 8px 12px; background: #e0e0e0; border: none; border-radius: 5px; cursor: pointer; font-size: 0.9em; color: #333; }
+        .category-btn:hover, .category-btn.active { background: #6A1B9A; color: white; }
+        .input-group { display: flex; gap: 10px; margin: 10px 0; align-items: center; }
+        input, select, button, textarea { padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        input[type="text"], textarea { flex: 1; }
+        button { background: #6A1B9A; color: white; border: none; cursor: pointer; }
+        button:hover { background: #4A148C; }
+        .upload-section { display: flex; gap: 10px; align-items: center; margin: 10px 0; }
+        .upload-btn { background: #2196F3; }
+        .upload-btn:hover { background: #1976D2; }
+        .evidence-btn { background: #ff9800; }
+        .evidence-btn:hover { background: #f57c00; }
+        .back-btn { background: #666; padding: 8px 15px; text-decoration: none; color: white; border-radius: 5px; }
+        .back-btn:hover { background: #555; }
+        .rating-container {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        .rating-stars {
+            font-size: 30px;
+            margin: 10px 0;
+        }
+        .rating-stars span {
+            cursor: pointer;
+            color: #ddd;
+            transition: color 0.2s;
+        }
+        .rating-stars span:hover,
+        .rating-stars span.active {
+            color: #ffc107;
+        }
+        .message.bot { background: #F3E5F5; }
+        .message.user { background: #E1BEE7; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="chat-container">
+            <div class="chat-header">
+                <div style="display: flex; align-items: center;">
+                    <div class="robot-avatar">🤖</div>
+                    <h3>🛍️ Customer Support Assistant</h3>
+                </div>
+                <a href="/" class="back-btn">← Back</a>
+            </div>
+            <div class="chat-messages" id="messages"></div>
+            <div class="input-area">
+                <div class="category-section">
+                    <label><strong>Select your problem category:</strong></label>
+                    <div class="category-buttons">
+                        <button class="category-btn" onclick="selectCategory('product-inquiry')">Product Inquiry</button>
+                        <button class="category-btn" onclick="selectCategory('return-refund')">Return/Refund</button>
+                        <button class="category-btn" onclick="selectCategory('shipping')">Shipping</button>
+                        <button class="category-btn" onclick="selectCategory('payment')">Payment</button>
+                        <button class="category-btn" onclick="selectCategory('technical')">Technical Issue</button>
+                        <button class="category-btn" onclick="selectCategory('other')">Other</button>
+                    </div>
+                </div>
+                
+                <div class="upload-section">
+                    <input type="file" id="productImage" accept="image/*" style="display: none;">
+                    <button class="upload-btn" onclick="document.getElementById('productImage').click()">📷 Upload for Price Compare</button>
+                    
+                    <input type="file" id="evidenceImage" accept="image/*" style="display: none;">
+                    <button class="evidence-btn" onclick="document.getElementById('evidenceImage').click()">📋 Upload Evidence</button>
+                </div>
+
+                <div class="input-group">
+                    <textarea id="messageInput" placeholder="Describe your issue or select a suggested question..." rows="2"></textarea>
+                    <button onclick="sendMessage()">Send</button>
+                    <button onclick="endChat()" style="background: #ff5722;">End Chat</button>
+                </div>
+
+                <div class="input-group">
+                    <select id="language">
+                        <option value="en">English</option>
+                        <option value="es">Español</option>
+                        <option value="fr">Français</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedCategory = '';
+        let suggestedQuestions = {
+            'product-inquiry': [
+                'What are the specifications of this product?',
+                'Is this product available in different colors?',
+                'What is the warranty period?'
+            ],
+            'return-refund': [
+                'How do I return a product?',
+                'What is your refund policy?',
+                'I want to return a defective item'
+            ],
+            'shipping': [
+                'Where is my order?',
+                'How long does shipping take?',
+                'Can I change my delivery address?'
+            ],
+            'payment': [
+                'My payment was declined',
+                'How do I get a receipt?',
+                'Can I pay with a different method?'
+            ],
+            'technical': [
+                'The website is not working',
+                'I cannot access my account',
+                'The app keeps crashing'
+            ]
+        };
+
+        function selectCategory(category) {
+            selectedCategory = category;
+            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (category !== 'other') {
+                showSuggestedQuestions(category);
+            } else {
+                document.getElementById('messageInput').placeholder = 'Please describe your issue...';
+            }
+        }
+
+        function showSuggestedQuestions(category) {
+            const questions = suggestedQuestions[category] || [];
+            let questionHtml = `<div class="message bot">Here are some common questions for ${category.replace('-', ' ')}:<br>`;
+            questions.forEach((q, i) => {
+                questionHtml += `<button onclick="useQuestion('${q}')" style="display: block; margin: 5px 0; padding: 8px 12px; background: rgba(64, 64, 64, 0.8); color: white; border: none; border-radius: 5px; cursor: pointer; width: 100%; text-align: left;">${q}</button>`;
+            });
+            questionHtml += '</div>';
+            document.getElementById('messages').innerHTML += questionHtml;
+            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+        }
+
+        function useQuestion(question) {
+            document.getElementById('messageInput').value = question;
+        }
+
+        let awaitingCaseDetails = false;
+        let caseType = '';
+        let conversationContext = [];
+        
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            addMessage('user', message);
+            input.value = '';
+            
+            // Check if we're waiting for case details
+            if (awaitingCaseDetails) {
+                await createCase(caseType, message);
+                awaitingCaseDetails = false;
+                return;
+            }
+            
+            // Check if user wants to change something
+            if (message.toLowerCase().includes('change') && (message.toLowerCase().includes('address') || message.toLowerCase().includes('phone') || message.toLowerCase().includes('name') || message.toLowerCase().includes('email'))) {
+                awaitingCaseDetails = true;
+                caseType = 'Information Update';
+                addMessage('bot', 'I can help you with that! Please provide the new details you\'d like to update, and I\'ll create a case for our team to process. 😊');
+                return;
+            }
+            
+            // Check for any problem keywords and create case automatically
+            const problemKeywords = ['problem', 'issue', 'trouble', 'fail', 'failed', 'failing', 'broken', 'wrong', 'error', 'not working', 'defective', 'damaged'];
+            const hasProblem = problemKeywords.some(keyword => message.toLowerCase().includes(keyword));
+            
+            if (hasProblem) {
+                // Create case automatically for any problem
+                setTimeout(async () => {
+                    await createCase('Customer Issue', message);
+                }, 2000); // Create case after bot response
+            }
+            
+            // Add to conversation context
+            conversationContext.push({ role: 'user', message: message });
+            
+            showTypingIndicator();
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message,
+                        category: selectedCategory,
+                        language: document.getElementById('language').value,
+                        storeId: 'store1',
+                        context: conversationContext.slice(-5) // Last 5 exchanges for context
+                    })
+                });
+
+                const data = await response.json();
+                hideTypingIndicator();
+                
+                if (data.error) {
+                    addMessage('bot', data.response || 'Sorry, I\'m having technical difficulties. Please try again.');
+                } else {
+                    addMessage('bot', data.response);
+                }
+            } catch (error) {
+                hideTypingIndicator();
+                console.error('Chat request failed:', error);
+                addMessage('bot', 'I\'m sorry, I\'m having trouble connecting right now. Please try again in a moment.');
+            }
+            
+            // Add bot response to context
+            conversationContext.push({ role: 'bot', message: data.response });
+        }
+        
+        async function createCase(type, details) {
+            const response = await fetch('/api/case', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type: type,
+                    details: details,
+                    customerInfo: { category: selectedCategory }
+                })
+            });
+            
+            const data = await response.json();
+            addMessage('bot', data.message);
+        }
+
+        document.getElementById('productImage').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            addMessage('user', '📷 Uploaded product image for price comparison');
+
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('type', 'price-compare');
+            formData.append('language', document.getElementById('language').value);
+
+            const response = await fetch('/api/image', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+            addMessage('bot', data.response);
+        });
+
+        document.getElementById('evidenceImage').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            addMessage('user', '📋 Uploaded evidence image');
+
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('type', 'evidence');
+            formData.append('category', selectedCategory);
+
+            const response = await fetch('/api/image', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+            addMessage('bot', data.response);
+            
+            // Create refund case after evidence upload
+            if (selectedCategory === 'return-refund') {
+                await createCase('Refund/Return Request', 'Evidence uploaded for refund/return request');
+            }
+        });
+
+        function addMessage(type, text) {
+            const messages = document.getElementById('messages');
+            const div = document.createElement('div');
+            div.className = `message ${type}`;
+            // Convert \n to <br> for proper line breaks and format text
+            div.innerHTML = text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            messages.appendChild(div);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        function showTypingIndicator() {
+            const messages = document.getElementById('messages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot typing-indicator';
+            typingDiv.id = 'typing';
+            typingDiv.innerHTML = '🤖 <em>AI Assistant is typing...</em>';
+            messages.appendChild(typingDiv);
+            messages.scrollTop = messages.scrollHeight;
+        }
+        
+        function hideTypingIndicator() {
+            const typing = document.getElementById('typing');
+            if (typing) typing.remove();
+        }
+        
+        function endChat() {
+            showSatisfactionRating();
+        }
+        
+        function showSatisfactionRating() {
+            const messages = document.getElementById('messages');
+            const ratingDiv = document.createElement('div');
+            ratingDiv.className = 'message bot';
+            ratingDiv.innerHTML = `
+                <div class="rating-container">
+                    <p><strong>How was your experience today?</strong></p>
+                    <div class="rating-stars" id="ratingStars">
+                        <span onclick="rate(1)">⭐</span>
+                        <span onclick="rate(2)">⭐</span>
+                        <span onclick="rate(3)">⭐</span>
+                        <span onclick="rate(4)">⭐</span>
+                        <span onclick="rate(5)">⭐</span>
+                    </div>
+                    <p>Click the stars to rate your experience</p>
+                </div>
+            `;
+            messages.appendChild(ratingDiv);
+            messages.scrollTop = messages.scrollHeight;
+        }
+        
+        function rate(stars) {
+            // Highlight selected stars
+            const starElements = document.querySelectorAll('#ratingStars span');
+            starElements.forEach((star, index) => {
+                if (index < stars) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+            
+            setTimeout(() => {
+                addMessage('bot', `Thank you for rating us ${stars} star${stars > 1 ? 's' : ''}! 🙏\n\nYour feedback helps us improve our service.\n\nWould you like to start a new chat for any other inquiries?\n\n<button onclick="startNewChat()" style="background: #6A1B9A; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">Start New Chat</button>`);
+            }, 1000);
+        }
+        
+        function startNewChat() {
+            // Reset chat
+            document.getElementById('messages').innerHTML = '';
+            selectedCategory = '';
+            conversationContext = []; // Reset conversation context
+            awaitingCaseDetails = false;
+            caseType = '';
+            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+            
+            // Show welcome message
+            addMessage('bot', 'Hi! I\'m your AI assistant. Please select a category above to get started. 😊');
+        }
+        
+        // Welcome message
+        addMessage('bot', 'Hi! I\'m your AI assistant. Please select a category above to get started. 😊');
+    </script>
+</body>
+</html>
